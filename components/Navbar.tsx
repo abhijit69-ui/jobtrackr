@@ -1,10 +1,23 @@
+'use client';
+
 import { CodeXmlIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { getSession } from '@/lib/auth/auth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { signOut, useSession } from '@/lib/auth/auth-client';
+import { useRouter } from 'next/navigation';
 
-export default async function Navbar() {
-  const session = await getSession();
+export default function Navbar() {
+  const router = useRouter();
+  const { data: session } = useSession();
   return (
     <nav className='border-b border-gray-200 bg-white'>
       <div className='container mx-auto flex justify-between h-16 items-center px-4'>
@@ -21,18 +34,56 @@ export default async function Navbar() {
             <>
               <Link href={'/dashboard'}>
                 <Button
-                  variant={'ghost'}
+                  variant={'outline'}
                   className='text-gray-700 hover:text-black cursor-pointer'
                 >
                   Dashboard
                 </Button>
               </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className='cursor-pointer h-8 w-8'>
+                    <AvatarFallback className='bg-primary text-white'>
+                      {session?.user.name[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                  align='end'
+                  sideOffset={12}
+                  className='w-64 p-2 rounded-xl shadow-lg'
+                >
+                  <DropdownMenuLabel className='px-3 py-2'>
+                    <div className='flex flex-col space-y-1'>
+                      <p className='text-sm font-medium'>
+                        {session?.user.name}
+                      </p>
+                      <p className='text-xs text-muted-foreground truncate'>
+                        {session?.user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    className='cursor-pointer rounded-md px-3 py-2 text-sm hover:bg-muted'
+                    onClick={async () => {
+                      await signOut();
+                      router.push('/sign-in');
+                    }}
+                  >
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <>
               <Link href='/sign-in'>
                 <Button
-                  variant='ghost'
+                  variant='outline'
                   className='text-gray-700 hover:text-black cursor-pointer'
                 >
                   Log In
